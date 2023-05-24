@@ -21,7 +21,16 @@ To install the library, download the source code and run the following command a
 ```
 mvn clean install
 ```
+or you can use mvnw wrapper
 
+linux: 
+```
+./mvnw  clean install
+```
+windows: 
+```
+./mvnw.cmd  clean install
+```
 This command will generate the jar file in the target folder and by default, it will put the artifact in the local `.m2` Maven repository.
 
 ### Installation
