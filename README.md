@@ -60,17 +60,16 @@ public interface RestRepository extends RestRepository {}
 
 | Variables         | Descpriton                     | Example
 | -------------     | ------------------------------ | ------------------------------ |
-| **MultiPartBodyConfig** | body of a multi-part request| application-multipart header required                            |
+| **MultiPartBodyConfig** | body of a multi-part request| application-multipart header required                           |
 | **HttpHeaders** | httpHeaders  | map of headers            |
-|**QueryParamsConfig**  | parametri della query , l'oridne non è importante example |/hello?key=value|
+|**QueryParamsConfig**  | query params, order is not important  |`/hello?key=value`|
 |**ProxyConfig** |  a simplify proxy pojo | host, port autentication ecc ecc | 
 | **InterfaceRestLocatiorConfig**  |  define the request server url ecc. | url , protocol , path |
 | **Body** | body of a simple rest request , it is a generic| `<T>` | 
 |**PathVariableConfig**| list of path variable, order is very important| `sompath/<key1>/<key2>` |
 
 
-Tutti gli oggetti sono dei pojo, non hanno logiche specifiche (eccetto per **BaseRestLocatorConfig**
-e **InterfaceRestLocatiorConfig**)
+All objects are POJOs (Plain Old Java Objects) and do not have specific logic, except for **BaseRestLocatorConfig** and **InterfaceRestLocatiorConfig**.
 
 #####Examples
 ```java
@@ -99,12 +98,12 @@ The method name should start with the HTTP verb, in this case, POST. You can the
 
 | Variables         | Descpriton                     | Example | 
 | -------------     | ------------------------------ |----------|
-| PathVariables     | url path variables               | /somerest/<parma1>/<para2 |
-| QueryParams       | url query params                 |  /somerest?key=value | 
+| PathVariables     | url path variables               | `/somerest/<parma1>/<para2>` |
+| QueryParams       | url query params                 | `/somerest?key=value` | 
 | Proxy             | proxy config                     ||
-| Headers           | Headers                          |{"Authorization" :"sometoken"} |
-| Body              | request body                     | {"some":"body"} , class | 
-| MultiPart         | MultipartRequest                 | {"file" :"/pathToFile" , "key, "value"} |
+| Headers           | Headers                          |`{"Authorization" :"sometoken"}` |
+| Body              | request body                     | `{"some":"body"}` , class | 
+| MultiPart         | MultipartRequest                 | `{"file" :"/pathToFile" , "key, "value"}` |
 
 
 Note that you cannot combine Body and MultiPart, as one would override the other.
