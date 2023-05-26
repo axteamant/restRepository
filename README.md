@@ -64,7 +64,7 @@ Once you have defined the target packages (default: main), you can extend any in
 `RestRepository` to inherit the default methods.
 
 ```java
-public interface RestRepository extends RestRepository {}
+public interface RestRepositoryExample extends RestRepository {}
 ```
 
 #### Required Object Definition:
