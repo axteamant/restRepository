@@ -1,6 +1,6 @@
 
 ![Spring RestRepository](./logo.png)
-![Spring RestRepository](https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Spring_Framework_Logo_2018.svg/1280px-Spring_Framework_Logo_2018.svg.png)
+![Spring RestRepository](./logo1.png)
 
 # Spring RestRepository
 ## Objective
@@ -113,7 +113,7 @@ Once you have defined the target packages (default: main), you can extend any in
 `RestRepository` to inherit the default methods.
 
 ```java
-public interface RestRepository extends RestRepository {}
+public interface RestRepositoryExample extends RestRepository {}
 ```
 
 #### Required Object Definition:
