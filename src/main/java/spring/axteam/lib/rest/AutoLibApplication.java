@@ -1,5 +1,6 @@
 package spring.axteam.lib.rest;
 
+import spring.axteam.lib.rest.rest.engine.EnableAutoRestRepository;
 import spring.axteam.lib.rest.rest.engine.EnableRestRepository;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,7 +12,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
  */
 @SpringBootApplication
 @EnableAspectJAutoProxy
-@EnableRestRepository(packages = {})
+@EnableAutoRestRepository(packages = {})
 public class AutoLibApplication {
 
 	public static void main(String[] args) {

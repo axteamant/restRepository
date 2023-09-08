@@ -151,13 +151,13 @@ public class RestRequest<T> {
         System.out.println( baseRestLocatorConfig.getServiceEndpoint());
         System.out.println("URL : " + ( this.uri!=null?this.uri.toString():
                 baseRestLocatorConfig.getServiceEndpoint()));
-        System.out.println("METHOD" + method.toString());
-        System.out.println("BODY" + requestEntity);
+        System.out.println("METHOD : " + method.toString());
+        System.out.println("BODY : " + requestEntity);
         System.out.println("RETURN CLAZZ" + clazz);
         ResponseEntity<T> o = restTemplate.exchange(this.uri!=null?this.uri.toString():
                 baseRestLocatorConfig.getServiceEndpoint(), method, requestEntity,clazz);
-        System.out.println("RETURN STATUS" +o.getStatusCode());
-        System.out.println("RETURN BODY" +o.getBody());
+        System.out.println("RETURN STATUS : " +o.getStatusCode());
+        System.out.println("RETURN BODY : " +o.getBody());
         return o. getBody();
     }
 

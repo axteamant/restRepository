@@ -1,6 +1,8 @@
 package spring.axteam.lib.rest.rest.engine;
 
 import com.google.gson.Gson;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.reflections.Reflections;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -19,79 +21,37 @@ import java.util.Set;
  This class is targeted by the custom annotation {@link EnableRestRepository} and allows for the instantiation of auto-configuration beans.
  * @author  Alexei Vezzola
  */
-@Configuration
-@EnableAutoConfiguration
-@EnableAspectJAutoProxy
+
 public class AutoConfigRestRepository {
-    private List<String> packages = new ArrayList<>();
+    public List<String> getPackages() {
+        return packages;
+    }
+
+    public static void setPackages(List<String> packages) {
+        AutoConfigRestRepository.packages = packages;
+    }
+
+    public static boolean isUseAnnotation() {
+        return useAnnotation;
+    }
+
+    public static void setUseAnnotation(boolean use) {
+        useAnnotation = use;
+    }
+
+    private static List<String> packages = new ArrayList<>();
+    private static boolean useAnnotation = true;
+    private Logger logger = LogManager.getLogger(this.getClass().getName());
     private String mainClass= null;
 
-    /**
-
-     Method that retrieves the package of the main class for which it is possible to use reflection
-     to retrieve the {@link EnableAspectJAutoProxy} annotation.
-     @return the name of the main class or null
-     @throws ClassNotFoundException
-     */
-    public  String getBasePackage() throws ClassNotFoundException {
-        String mainClassName = getMainClassName();
-        if (mainClassName != null) {
-            int lastDotIndex = mainClassName.lastIndexOf(".");
-            if (lastDotIndex != -1) {
-                System.out.println(mainClassName.substring(0, lastDotIndex));
-                mainClassName=  mainClassName.substring(0, lastDotIndex +1);
-                mainClass = mainClassName;
-                return mainClassName;
-            }
-        }
-        return null;
-    }
-
-    /**
-
-     Method that retrieves the name of the main class from the JVM trace.
-     @return the name of the class or null
-     @throws ClassNotFoundException
-     */
-    private  String getMainClassName()  {
-        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        for (StackTraceElement element : stackTraceElements) {
-            if ("main".equals(element.getMethodName())) {
-                return element.getClassName();
-            }
-        }
-        return null;
-    }
 
 
     /**
 
-     Method that retrieves all classes annotated with ${@link EnableRestRepository}
+     Method that retrieves all classes annotated with ${@link EnableAutoRestRepository}
      and sets a list of classes.
      @throws AutoConfigurationException
      */
-    public AutoConfigRestRepository() throws AutoConfigurationException {
-        // Imposta il tuo pacchetto radice
-        Reflections reflections =null;
-        try {
-            reflections = new Reflections(getBasePackage());
-        }catch (Exception e){
-            throw new AutoConfigurationException("can't find main class");
-        }
-        Set<Class<?>> annotatedClasses = reflections.getTypesAnnotatedWith(EnableRestRepository.class);
-        System.out.println(annotatedClasses);
-        for (Class<?> clazz : annotatedClasses) {
-                EnableRestRepository blobbyAnnotation = clazz.getAnnotation(EnableRestRepository.class);
-                packages.addAll(Arrays.asList(blobbyAnnotation.packages()));
-        }
-        System.out.println(packages);
-        if(packages.isEmpty()){
-            System.out.println(" no RestRepository packageLocation, Add Default of the main class package : " + mainClass);
-            packages.add(mainClass);
-        }
-
-
-    }
 
     /**
 
@@ -100,6 +60,7 @@ public class AutoConfigRestRepository {
      */
     @Bean
     @ConditionalOnMissingBean
+    //@ConditionalOnMissingBean
     RestTemplate restTemplate ()
     {
         return new RestTemplate();
@@ -112,6 +73,7 @@ public class AutoConfigRestRepository {
      */
     @Bean
     @ConditionalOnMissingBean
+    //@ConditionalOnMissingBean
     Gson gson(){
         return new Gson();
     }
@@ -123,8 +85,9 @@ public class AutoConfigRestRepository {
      */
     @Bean
     @ConditionalOnMissingBean
+    //@ConditionalOnMissingBean
     RepositoryRestRegistration repositoryRestRegistration(){
-        return new RepositoryRestRegistration(packages);
+        return new RepositoryRestRegistration(packages, useAnnotation);
     }
 
 
@@ -135,6 +98,7 @@ public class AutoConfigRestRepository {
      */
     @Bean
     @ConditionalOnMissingBean
+    // @ConditionalOnMissingBean
     RestTemplateResolver restTemplateResolver( ){
         return new RestTemplateResolver();
     }
@@ -150,6 +114,7 @@ public class AutoConfigRestRepository {
     RestRepositoryResolver restRepositoryResolver( RestTemplateResolver restTemplateResolver){
         return new RestRepositoryResolver(restTemplateResolver);
     }
+
 }
 
 

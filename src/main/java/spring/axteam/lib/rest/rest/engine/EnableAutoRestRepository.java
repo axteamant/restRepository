@@ -1,6 +1,5 @@
 package spring.axteam.lib.rest.rest.engine;
 
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 
@@ -12,10 +11,10 @@ import java.lang.annotation.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-@EnableAutoConfiguration
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Import({AutoConfigRestRepository.class})
 @EnableAspectJAutoProxy
-@Import({ConfigRestRepository.class})
-public @interface EnableRestRepository{
+public @interface EnableAutoRestRepository {
     String[] packages() default {};
+
 }

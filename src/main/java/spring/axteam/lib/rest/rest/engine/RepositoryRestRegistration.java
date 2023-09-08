@@ -1,5 +1,10 @@
 package spring.axteam.lib.rest.rest.engine;
 
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ConfigurationBuilder;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import spring.axteam.lib.rest.rest.repository.RestRepository;
 import lombok.SneakyThrows;
 import org.apache.log4j.Logger;
@@ -20,7 +25,9 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
 
@@ -28,11 +35,55 @@ import java.util.List;
  * @author  Alexei Vezzola
  */
 public class RepositoryRestRegistration implements BeanDefinitionRegistryPostProcessor {
+    public RepositoryRestRegistration(List<String> packages){
+        this.packages = packages;
+        this.useAnnotation = false;
+
+    }
     private static final Logger logger = Logger.getLogger(RepositoryRestRegistration.class);
     private final List<String>  packages;
-
-    public RepositoryRestRegistration(List<String >packages) {
+    private final  boolean useAnnotation;
+    private String mainClass;
+    public RepositoryRestRegistration(List<String> packages, boolean useAnnotation) {
         this.packages = packages;
+        this.useAnnotation = useAnnotation;
+    }
+    void useAnnotationConfig(){
+
+        // Imposta il tuo pacchetto radice
+        Reflections reflections =null;
+
+        if(!useAnnotation){
+            logger.debug("use  RestRepositoryFactoryConfig object find in context, skip reflections configuration");
+            return;
+        }
+        logger.debug("use Reflection configuration .....");
+
+        try {
+            logger.debug("try to find main class .....");
+            String mainclass= getBasePackage();
+            reflections = new Reflections(mainclass);
+            logger.debug(" main class on " + mainclass + "start to reflect to find annotations EnableRestRepository");
+        }catch (Exception e){
+            logger.debug("no main class scan for com");
+
+            reflections= new Reflections("spring.axteam.lib.rest");
+            logger.debug("can't find main class, continue using default jf base rest package");
+        }
+        Set<Class<?>> annotatedClasses = reflections.getTypesAnnotatedWith(EnableAutoRestRepository.class);
+        int all =0;
+        logger.debug("number of RestRepository classes  " + all );
+        if(annotatedClasses.isEmpty()){
+            logger.debug("no rest Repository , continue....");
+        }
+        for (Class<?> clazz : annotatedClasses) {
+            EnableAutoRestRepository blobbyAnnotation = clazz.getAnnotation(EnableAutoRestRepository.class);
+            packages.addAll(Arrays.asList(blobbyAnnotation.packages()));
+        }
+
+        if(packages.isEmpty()){
+            packages.add("spring.axteam.lib.rest");
+        }
     }
 
     /**
@@ -44,10 +95,12 @@ public class RepositoryRestRegistration implements BeanDefinitionRegistryPostPro
     @SneakyThrows
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        InvocationHandler invocationHandler = new CustomInvocationHandler();
-        List<Class<?>> repos= getInterfacesExtendingRestRepository(RestRepository.class);
+        useAnnotationConfig();
+
+        List<Class<?>> repos= getInterfacesExtendingRestRepositoryNew(packages);
         logger.debug("find " + repos.size() + " repos that implement"  + RestRepository.class.getClass());
         for(Class  repo : repos){
+            InvocationHandler invocationHandler = new CustomInvocationHandler(repo);
             logger.debug("try to instance proxy for class  "  + repo.getName());
             RestRepository restTemplateExampleProxy = (RestRepository) Proxy.newProxyInstance(
                     repo.getClassLoader(),
@@ -55,9 +108,11 @@ public class RepositoryRestRegistration implements BeanDefinitionRegistryPostPro
                     invocationHandler
             );
             BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(repo, () -> restTemplateExampleProxy);
+            System.out.println("###### " +repo.getName());
             registry.registerBeanDefinition(repo.getName(), beanDefinitionBuilder.getBeanDefinition());
             logger.debug("instance correctly repository with name  "  + repo.getName());
         }
+
     }
 
     /**
@@ -77,6 +132,12 @@ public class RepositoryRestRegistration implements BeanDefinitionRegistryPostPro
      */
     public class CustomInvocationHandler implements InvocationHandler {
 
+        private Class repo;
+        public CustomInvocationHandler(Class repo) {
+            super();
+            this.repo=repo;
+        }
+
         /**
          * Do nothing
          * @param proxy proxy Object
@@ -87,50 +148,75 @@ public class RepositoryRestRegistration implements BeanDefinitionRegistryPostPro
          */
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if(method.getName().equalsIgnoreCase("toString"))return repo.getName();
             return 1;
         }
     }
 
-    /**
-     * This method find all Interface that Extend RestRepository
-     * @param restRepositoryInterface All Clazz
-     * @return
-     */
-    public  List<Class<?>> getInterfacesExtendingRestRepository(Class<?> restRepositoryInterface) {
-        List<Class<?>> interfaces = new ArrayList<>();
-        ApplicationContext applicationContext = new AnnotationConfigApplicationContext();
-        PathMatchingResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
-        MetadataReaderFactory metadataReaderFactory = new SimpleMetadataReaderFactory(applicationContext);
-
+    public List<Class<?>> getInterfacesExtendingRestRepositoryNew(List<String> packages) {
+        List<Class<?>> result = new ArrayList<>();
         try {
-            for(String pack :  this.packages) {
-                String packageSearchPath = "classpath*:"+pack.replace(".", "/")+"/**"; // Imposta il percorso del package da scansionare
-                System.out.println(packageSearchPath);
-                org.springframework.core.io.Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);
 
-                for (org.springframework.core.io.Resource resource : resources) {
-                    if (resource.isReadable()) {
-                        MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(resource);
-                        if (metadataReader.getClassMetadata().isInterface()) {
-                            if (metadataReader.getClassMetadata().getInterfaceNames() != null) {
-                                for (String interfaceName : metadataReader.getClassMetadata().getInterfaceNames()) {
-                                    if (restRepositoryInterface.getName().equals(interfaceName)) {
-                                        logger.debug("find  an interface " + restRepositoryInterface.getName() + " that extend " + RestRepository.class.getClass());
-                                        interfaces.add(Class.forName(metadataReader.getClassMetadata().getClassName()));
 
-                                        break;
-                                    }
-                                }
-                            }
-                        }
+            for (String pack : packages) {
+                Reflections reflections = new Reflections(new ConfigurationBuilder()
+                        .forPackages(pack)
+                        .setScanners(new SubTypesScanner(false)));
+
+                Set<Class<? extends RestRepository>> subTypes = reflections.getSubTypesOf(RestRepository.class);
+                for (Class<?> clazz : subTypes) {
+                    if (clazz.isInterface()) {
+                        result.add(clazz);
                     }
                 }
+
             }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return interfaces;
+        }catch (Exception e){e.printStackTrace();}
+
+        return result;
     }
+
+
+
+    /**
+
+     Method that retrieves the package of the main class for which it is possible to use reflection
+     to retrieve the {@link EnableAspectJAutoProxy} annotation.
+     @return the name of the main class or null
+     @throws ClassNotFoundException
+     */
+    public  String getBasePackage() throws ClassNotFoundException {
+        String mainClassName = getMainClassName();
+        if (mainClassName != null) {
+            int lastDotIndex = mainClassName.lastIndexOf(".");
+            if (lastDotIndex != -1) {
+                logger.info(" main class find :"+ mainClassName.substring(0, lastDotIndex));
+                mainClassName=  mainClassName.substring(0, lastDotIndex +1);
+                mainClass = mainClassName;
+                logger.warn ("Repository main package is : " + mainClassName);
+                return mainClassName;
+            }
+        }
+        return null;
+    }
+
+    /**
+
+     Method that retrieves the name of the main class from the JVM trace.
+     @return the name of the class or null
+     @throws ClassNotFoundException
+     */
+    private  String getMainClassName()  {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        for (StackTraceElement element : stackTraceElements) {
+            if ("main".equals(element.getMethodName())) {
+                return element.getClassName();
+            }
+        }
+        return null;
+    }
+
+
 
 
 

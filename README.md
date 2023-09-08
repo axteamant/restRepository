@@ -47,8 +47,57 @@ To install the jar for convenience, you can use Maven. Once the library has been
 </dependency>
 ```
 
+
 ## Usage
 
+There are two different possibile configurations
+
+1 *recommended* ) Using `@EnableRestRepository` Annotation and define a bean in the application Context of type : `RepositoryRestRegistration` in a Spring `@Configuration`  class.
+
+
+
+```java
+    @Configuration
+    @EnableRestRepository
+    static public class ExampleEneableRestRepository {
+        @Bean
+        RepositoryRestRegistration repositoryRestRegistration(){
+            List<String> packs= new ArrayList<>();
+            packs.add("com.xxy.core");
+            packs.add("com.xx1.core");
+            return new RepositoryRestRegistration(packs);
+        }
+    }
+```
+
+`RepositoryRestRegistration`  is a Object that define all possible RestReposiotry packages.
+if is empty , project it looks from package `com.**` . In the example code `RepositoryRestRegistration` looks for all RestRepositories Interface that are in packages :
+
+- com.xxy.core.**
+- com.xx1.core.**
+
+
+---- 
+
+2) Using `@EnableAutoRestRepository` Annotation.
+   this annotation scan all packages to find `@EnableAutoRestRepository` properties packages
+
+By default Reflections looking from main class and start scan from there all packages recursive .
+If the project don't have a main class , it looks from package `com.**`
+
+DISCLAMER  : this configuration can be very memory and time consuming when target project is very large, the first configuration is more performing , the second is better in a micro service architecture
+
+
+```java
+    @Configuration
+    @EnableAutoRestRepository(packages = {})
+    static public class ExampleAutoEneableRestRepository {
+    }
+```
+
+packages is a annotation attribute that can be used to specify packages that contain RestRepositories Interfaces . If it is ampty, then the library will look all packages in `com.**`
+
+---- 
 ### EnableRestRepository
 
 This annotation starts the process behind RestRepository.
