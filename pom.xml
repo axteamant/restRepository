@@ -2,11 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-<!--
 
-mvn org.apache.maven.plugins:maven-install-plugin:3.1.0:install-file -Dfile="C:\Users\RAD\Desktop\Auto_lib\target\auto-lib-0.0.1-SNAPSHOT.jar" -DgroupId="com.autorun" -DartifactId=auto-lib -Dversion="0.0.1-SNAPSHOT" -Dpackaging="jar" -DlocalRepositoryPath="C:\Users\RAD\.m2\custom"                                                                             \
-
--->
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
@@ -29,17 +25,7 @@ mvn org.apache.maven.plugins:maven-install-plugin:3.1.0:install-file -Dfile="C:\
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.springframework.shell/spring-shell-starter -->
-		<!-- https://mvnrepository.com/artifact/org.springframework.shell/spring-shell-starter -->
 
-
-
-
-
-		<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
-
-
-		<!-- https://mvnrepository.com/artifact/org.json/json -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
